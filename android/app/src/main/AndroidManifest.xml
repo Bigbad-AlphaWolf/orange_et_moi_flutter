@@ -1,9 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="sn.sonatel.dsi.dif.selfcare.orange_et_moi">
    <application
-        android:label="orange_et_moi"
+        android:label="Orange Et Moi"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/launcher_icon">
         <activity
             android:name=".MainActivity"
             android:exported="true"

@@ -1,4 +1,4 @@
-# orange_et_moi
+# Orange Et Moi
 
 A new Flutter project.
 
