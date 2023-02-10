@@ -1,5 +1,8 @@
 import 'dart:convert';
 
+TokenResponse tokenResponseFromDecodedJson(Map<String, dynamic> str) =>
+    TokenResponse.fromJson(str);
+
 TokenResponse tokenResponseFromJson(String str) =>
     TokenResponse.fromJson(json.decode(str));
 

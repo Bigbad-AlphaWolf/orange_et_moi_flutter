@@ -6,8 +6,11 @@ import 'package:orange_et_moi/model/check_number.dart';
 import 'package:orange_et_moi/model/confirm_msisdn.dart';
 import 'package:orange_et_moi/model/customer_offer.dart';
 import 'package:orange_et_moi/model/token_response.dart';
+import 'package:orange_et_moi/pages/utils/index.dart';
+import 'package:orange_et_moi/pages/utils/mehod_utils.dart';
 import 'package:orange_et_moi/services/interceptor/auth_interceptor.dart';
 import 'package:orange_et_moi/services/micro_services.dart';
+import 'package:orange_et_moi/services/secure_storage/secure_storage.service.dart';
 
 class AuthenticationService {
   AuthenticationService() {
@@ -22,6 +25,8 @@ class AuthenticationService {
       "${ApiConstants.baseUrl}/${MicroService.AccountManagement}/api/abonne/v2/customerOffer");
   final urlCheckNumber = Uri.parse(
       "${ApiConstants.baseUrl}/${MicroService.AccountManagement}/api/account-management/v3/check_number");
+  final urlResetPwdLite = Uri.parse(
+      "${ApiConstants.baseUrl}/${MicroService.AccountManagement}/api/account-management/v1/lite/reset-password");
 
   Future<Response<dynamic>> getMsisdn() async {
     try {
@@ -80,10 +85,29 @@ class AuthenticationService {
   }
 
   Future<CheckNumber> checkNumber(String msisdn) async {
+    final hmacNetwork = (await SecureStorage().getValue(StorageKeys.HMAC.name));
     try {
-      Response<dynamic> response = await client
-          .post(urlCheckNumber.toString(), data: {msisdn: "221$msisdn"});
-      return checkNumberFromJson(response.data);
+      Response<dynamic> response = await client.post(urlCheckNumber.toString(),
+          data: {"msisdn": "221$msisdn", "hmac": hmacNetwork});
+      return checkNumberFromDecodedJson(response.data);
+    } catch (e) {
+      throw Exception(e);
+    }
+  }
+
+  Future<TokenResponse> resetPasswordLite(String login) async {
+    final hmacNetwork = (await SecureStorage().getValue(StorageKeys.HMAC.name));
+    try {
+      Response<dynamic> response = await client.put(urlResetPwdLite.toString(),
+          data: {
+            "login": login,
+            "hmac": hmacNetwork,
+            "newPassword": generateRandomString(10)
+          });
+      await (await SecureStorage()
+          .save(StorageKeys.TOKEN_INFOS.name, response.data));
+      TokenResponse model = tokenResponseFromDecodedJson(response.data);
+      return model;
     } catch (e) {
       throw Exception(e);
     }

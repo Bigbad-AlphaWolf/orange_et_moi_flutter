@@ -1,9 +1,15 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:orange_et_moi/model/check_number.dart';
 import 'package:orange_et_moi/model/confirm_msisdn.dart';
+import 'package:orange_et_moi/model/token_response.dart';
 import 'package:orange_et_moi/pages/utils/index.dart';
 import 'package:orange_et_moi/pages/utils/pipes.dart';
 import 'package:orange_et_moi/services/authentication/authentication.service.dart';
+import 'package:orange_et_moi/services/navigation/app_navigation.dart';
+import 'package:orange_et_moi/services/secure_storage/secure_storage.service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -16,8 +22,10 @@ class _LoginScreenState extends State<LoginScreen> {
   final _controller = TextEditingController();
   String? _text;
   String? _errorText;
+  bool _loading = false;
   AuthenticationService authenticationService = AuthenticationService();
-
+  SecureStorage storage = SecureStorage();
+  AppNavigation navigation = AppNavigation();
   @override
   void initState() {
     super.initState();
@@ -125,7 +133,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               backgroundColor: Color(0xFFff7900),
                               disabledBackgroundColor: Color(0xFFcccccc),
                             ),
-                            onPressed: _submit,
+                            onPressed: _loading ? null : _submit,
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
@@ -133,17 +141,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   'Suivant',
                                   style: TextStyle(fontSize: 16),
                                 ),
-                                Container(
-                                  margin: EdgeInsets.only(left: 10.0),
-                                  child: SizedBox(
-                                    width: 10,
-                                    height: 10,
-                                    child: const CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                )
+                                _showLoading()
                               ],
                             ),
                           ),
@@ -156,6 +154,22 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
     );
+  }
+
+  Widget _showLoading() {
+    return _loading
+        ? Container(
+            margin: EdgeInsets.only(left: 10.0),
+            child: SizedBox(
+              width: 10,
+              height: 10,
+              child: const CircularProgressIndicator(
+                strokeWidth: 2,
+                color: Colors.white,
+              ),
+            ),
+          )
+        : SizedBox();
   }
 
   void _checkErrorInvalidNumber() {
@@ -178,7 +192,7 @@ class _LoginScreenState extends State<LoginScreen> {
     _checkErrorInvalidNumber();
     if (_errorText == null) {
       // proceed
-      getMsisdn();
+      checkNumber();
     }
   }
 
@@ -188,6 +202,55 @@ class _LoginScreenState extends State<LoginScreen> {
     print("response ${resp?.msisdn}");
     if (resp != null) {
       _controller.text = formatGetMsisdn(resp.msisdn);
+      saveInfosNetwork(resp);
     }
+  }
+
+  Future checkNumber() async {
+    try {
+      setState(() {
+        _loading = true;
+      });
+      final CheckNumber resp =
+          (await AuthenticationService().checkNumber(_controller.text));
+      print(resp.accountStatus);
+      if (resp.accountStatus == AccountStatusEnum.LITE.name) {
+        resetPwd();
+      }
+      // if(context.mounted)
+      // navigation.goToDashboard(
+      //   context
+      // );
+    } catch (e) {
+      print("Une erreur est ${e.toString()}");
+      setState(() {
+        _loading = false;
+      });
+    }
+  }
+
+  Future resetPwd() async {
+    try {
+      setState(() {
+        _loading = true;
+      });
+      final TokenResponse resp =
+          (await AuthenticationService().resetPasswordLite(_controller.text));
+      print(resp);
+    } catch (e) {
+      setState(() {
+        _errorText = 'Impossible de se connecter. Veuillez réessayer plus tard';
+      });
+    } finally {
+      setState(() {
+        _loading = false;
+      });
+    }
+  }
+
+  Future saveInfosNetwork(ConfirmMsisdnNetwork info) async {
+    await storage.save(StorageKeys.HMAC.name, info.hmac);
+    await storage.save(
+        StorageKeys.MSISDN_NETWORK.name, formatGetMsisdn(info.msisdn));
   }
 }

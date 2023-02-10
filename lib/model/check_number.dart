@@ -1,5 +1,10 @@
 import 'dart:convert';
 
+enum AccountStatusEnum { LITE, FULL }
+
+CheckNumber checkNumberFromDecodedJson(Map<String, dynamic> str) =>
+    CheckNumber.fromJson(str);
+
 CheckNumber checkNumberFromJson(String str) =>
     CheckNumber.fromJson(json.decode(str));
 

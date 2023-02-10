@@ -1,6 +1,6 @@
-import 'dart:convert';
-
 import 'package:dio/dio.dart';
+import 'package:orange_et_moi/pages/utils/index.dart';
+import 'package:orange_et_moi/services/secure_storage/secure_storage.service.dart';
 
 class AuthInterceptor extends Interceptor {
   AuthInterceptor();
@@ -24,10 +24,11 @@ class AuthInterceptor extends Interceptor {
 
     // Load your token here and pass to the header
     var token = '';
+    final uuid = await getUUID();
     options.headers.addAll({
       // 'Authorization': token,
-      'uuid': "f7006881-4229-4613-9e14-8744bdaacc42",
-      'X-Selfcare-Uuid': "f7006881-4229-4613-9e14-8744bdaacc42",
+      'uuid': uuid.toString(),
+      'X-Selfcare-Uuid': uuid.toString(),
       "content-type": "application/json"
     });
     return handler.next(options);
@@ -42,5 +43,9 @@ class AuthInterceptor extends Interceptor {
   @override
   void onError(DioError err, ErrorInterceptorHandler handler) {
     return handler.next(err);
+  }
+
+  Future<String?> getUUID() async {
+    return await SecureStorage().getValue(StorageKeys.UUID.name);
   }
 }

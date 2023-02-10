@@ -3,7 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:orange_et_moi/model/slide.dart';
 import 'package:orange_et_moi/pages/LoginScreen/LoginScreen.dart';
+import 'package:orange_et_moi/pages/utils/index.dart';
+import 'package:orange_et_moi/services/secure_storage/secure_storage.service.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+import 'package:uuid/uuid.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -41,6 +44,12 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    generateUUID();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -160,5 +169,15 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       )),
     );
+  }
+
+  Future generateUUID() async {
+    final String? storedUUID =
+        await SecureStorage().getValue(StorageKeys.UUID.name);
+    print("uuid  $storedUUID");
+    if (storedUUID == null) {
+      var uuid = Uuid();
+      await SecureStorage().save(StorageKeys.UUID.name, uuid.v1());
+    }
   }
 }
