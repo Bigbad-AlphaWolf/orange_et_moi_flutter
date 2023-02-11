@@ -13,6 +13,7 @@ import 'package:orange_et_moi/services/micro_services.dart';
 import 'package:orange_et_moi/services/secure_storage/secure_storage.service.dart';
 
 class AuthenticationService {
+  final SecureStorage storage = SecureStorage();
   AuthenticationService() {
     client.interceptors.add(AuthInterceptor());
   }
@@ -85,7 +86,7 @@ class AuthenticationService {
   }
 
   Future<CheckNumber> checkNumber(String msisdn) async {
-    final hmacNetwork = (await SecureStorage().getValue(StorageKeys.HMAC.name));
+    final hmacNetwork = (await storage.getValue(StorageKeys.HMAC.name));
     try {
       Response<dynamic> response = await client.post(urlCheckNumber.toString(),
           data: {"msisdn": "221$msisdn", "hmac": hmacNetwork});
@@ -96,7 +97,7 @@ class AuthenticationService {
   }
 
   Future<TokenResponse> resetPasswordLite(String login) async {
-    final hmacNetwork = (await SecureStorage().getValue(StorageKeys.HMAC.name));
+    final hmacNetwork = (await storage.getValue(StorageKeys.HMAC.name));
     try {
       Response<dynamic> response = await client.put(urlResetPwdLite.toString(),
           data: {
@@ -104,9 +105,8 @@ class AuthenticationService {
             "hmac": hmacNetwork,
             "newPassword": generateRandomString(10)
           });
-      await (await SecureStorage()
-          .save(StorageKeys.TOKEN_INFOS.name, response.data));
       TokenResponse model = tokenResponseFromDecodedJson(response.data);
+      (await storage.save(StorageKeys.TOKEN_INFOS.name, model.accessToken));
       return model;
     } catch (e) {
       throw Exception(e);

@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:orange_et_moi/model/check_number.dart';
@@ -31,6 +29,9 @@ class _LoginScreenState extends State<LoginScreen> {
     super.initState();
     getMsisdn();
   }
+
+  @override
+  bool get mounted => super.mounted;
 
   @override
   void dispose() {
@@ -112,12 +113,17 @@ class _LoginScreenState extends State<LoginScreen> {
                                       0, 0, 0, 0.12)), //<-- SEE HERE
                             ),
                             labelText: 'Numéro de téléphone *',
-                            suffix: Text(
-                              "Rafraîchir",
-                              style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 14,
-                                  fontFamily: 'HelveticaNeueLTStd-Bd'),
+                            suffix: GestureDetector(
+                              onTap: () {
+                                getMsisdn();
+                              },
+                              child: Text(
+                                "Rafraîchir",
+                                style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 14,
+                                    fontFamily: 'HelveticaNeueLTStd-Bd'),
+                              ),
                             ),
                           ),
                         ),
@@ -211,16 +217,12 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() {
         _loading = true;
       });
-      final CheckNumber resp =
+      CheckNumber response =
           (await AuthenticationService().checkNumber(_controller.text));
-      print(resp.accountStatus);
-      if (resp.accountStatus == AccountStatusEnum.LITE.name) {
+      print(response.accountStatus);
+      if (response.accountStatus == AccountStatusEnum.LITE.name) {
         resetPwd();
       }
-      // if(context.mounted)
-      // navigation.goToDashboard(
-      //   context
-      // );
     } catch (e) {
       print("Une erreur est ${e.toString()}");
       setState(() {
@@ -231,12 +233,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future resetPwd() async {
     try {
-      setState(() {
-        _loading = true;
-      });
-      final TokenResponse resp =
-          (await AuthenticationService().resetPasswordLite(_controller.text));
-      print(resp);
+      await AuthenticationService().resetPasswordLite(_controller.text);
+      if (mounted) {
+        navigation.goToDashboard(context);
+      }
     } catch (e) {
       setState(() {
         _errorText = 'Impossible de se connecter. Veuillez réessayer plus tard';

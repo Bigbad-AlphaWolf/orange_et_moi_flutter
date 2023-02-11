@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-
 class Slide {
   String imagePath;
   String title;

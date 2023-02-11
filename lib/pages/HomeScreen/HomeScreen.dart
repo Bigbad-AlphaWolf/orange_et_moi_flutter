@@ -46,7 +46,6 @@ class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     generateUUID();
   }
@@ -75,22 +74,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 Stack(
                   alignment: AlignmentDirectional.center,
                   children: [
-                    CarouselSlider(
-                      carouselController: controller,
-                      options: CarouselOptions(
-                          // height: MediaQuery.of(context).size.height - 50,
-                          aspectRatio: 1,
-                          autoPlay: true,
-                          viewportFraction: 1,
-                          onPageChanged: (index, reason) {
-                            setState(() {
-                              _currentIndex = index;
-                            });
-                          }),
-                      items: HomeScreen.home_slides.map((slide) {
-                        return Builder(
-                          builder: (BuildContext context) {
-                            return Container(
+                    CarouselSlider.builder(
+                        itemCount: HomeScreen.home_slides.length,
+                        itemBuilder: (BuildContext context, int itemIndex,
+                                int pageViewIndex) =>
+                            SizedBox(
                                 width: MediaQuery.of(context).size.width * 0.6,
                                 // margin: EdgeInsets.symmetric(horizontal: 5.0),
                                 // decoration: BoxDecoration(color: Colors.amber),
@@ -101,11 +89,16 @@ class _HomeScreenState extends State<HomeScreen> {
                                         width:
                                             MediaQuery.of(context).size.width /
                                                 2,
-                                        image: AssetImage(slide.imagePath)),
+                                        image: AssetImage(HomeScreen.home_slides
+                                            .elementAt(itemIndex)
+                                            .imagePath)),
                                     Container(
                                       padding:
                                           EdgeInsets.only(top: 40, bottom: 10),
-                                      child: Text(slide.title,
+                                      child: Text(
+                                          HomeScreen.home_slides
+                                              .elementAt(itemIndex)
+                                              .title,
                                           textAlign: TextAlign.center,
                                           style: TextStyle(
                                             fontFamily: 'HelveticaNeueLTStd-Bd',
@@ -114,7 +107,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ),
                                     Expanded(
                                       child: Text(
-                                        slide.description,
+                                        HomeScreen.home_slides
+                                            .elementAt(itemIndex)
+                                            .description,
                                         textAlign: TextAlign.center,
                                         style: TextStyle(
                                             fontFamily:
@@ -123,11 +118,17 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ),
                                     ),
                                   ],
-                                ));
-                          },
-                        );
-                      }).toList(),
-                    ),
+                                )),
+                        options: CarouselOptions(
+                            // height: MediaQuery.of(context).size.height - 50,
+                            aspectRatio: 1,
+                            autoPlay: true,
+                            viewportFraction: 1,
+                            onPageChanged: (index, reason) {
+                              setState(() {
+                                _currentIndex = index;
+                              });
+                            })),
                     Positioned(
                       bottom: 150,
                       child: AnimatedSmoothIndicator(
