@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://www.google.com/recaptcha/api.js?render=6LcWQp8hAAAAADfyy__HZVF-8_glncUT_Sq4o2sv"></script>
+    <title>Recaptha</title>
+  </head>
+  <style type="text/css">
+    body {
+      background: rgba(0, 0, 0, 0.084);
+      margin: 0;
+      padding: 0;
+      opacity: 0;
+    }
+  </style>
+  <body style="background-color: transparent">
+    <div style="padding: 100px 50px; text-align: center">Veuillez patienter ...</div>
+    <div id="captchaBtn"></div>
+    <script>
+      var _selector = document.getElementById('captchaBtn');
+      _selector.addEventListener('click', function (event) {
+        grecaptcha.ready(function () {
+          grecaptcha.execute('6LcWQp8hAAAAADfyy__HZVF-8_glncUT_Sq4o2sv', {action: 'login'}).then(function (token) {
+            // Add your logic to submit to your backend server here.
+            console.log('token');
+            console.log(token);
+            if (typeof messageHandler !== 'undefined') {
+              messageHandler.postMessage(token);
+            }
+          });
+        });
+        if (messageHandler) {
+          messageHandler.postMessage(message);
+        }
+      });
+      _selector.click();
+    </script>
+  </body>
+</html>

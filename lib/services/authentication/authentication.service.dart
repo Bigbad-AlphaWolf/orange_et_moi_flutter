@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
 
+import 'package:dio/adapter.dart';
 import 'package:dio/dio.dart';
 import 'package:orange_et_moi/model/check_number.dart';
 import 'package:orange_et_moi/model/confirm_msisdn.dart';
@@ -16,6 +18,12 @@ class AuthenticationService {
   final SecureStorage storage = SecureStorage();
   AuthenticationService() {
     client.interceptors.add(AuthInterceptor());
+    (client.httpClientAdapter as DefaultHttpClientAdapter).onHttpClientCreate =
+        (HttpClient dioClient) {
+      dioClient.badCertificateCallback =
+          ((X509Certificate cert, String host, int port) => true);
+      return dioClient;
+    };
   }
   static final client = Dio();
   final urlGetMsisdn = Uri.parse(ApiConstants.OM_GET_MSISDN);

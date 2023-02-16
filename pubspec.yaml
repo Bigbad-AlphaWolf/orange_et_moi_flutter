@@ -46,6 +46,10 @@ dependencies:
   flutter_secure_storage: ^8.0.0
   # UUID
   uuid: ^3.0.6
+  # recaptcha webview
+  webview_flutter_plus: ^0.3.0+2
+  # Rounded Pin Input for OTP
+  pinput: ^2.2.21
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -77,6 +81,8 @@ flutter:
   assets:
     - assets/images/
     - assets/images/home_slides/
+    - assets/images/dashboard-conso/
+    - assets/webpages/index.html
   fonts:
     - family: HelveticaNeueLTStd-Bd
       fonts:

@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:orange_et_moi/model/check_number.dart';
 import 'package:orange_et_moi/model/confirm_msisdn.dart';
-import 'package:orange_et_moi/model/token_response.dart';
+import 'package:orange_et_moi/model/otp_generate.dart';
+import 'package:orange_et_moi/pages/LoginScreen/components/type_otp_code.dart';
+import 'package:orange_et_moi/pages/RecaptchaWebview/recaptcha_webview.dart';
 import 'package:orange_et_moi/pages/utils/index.dart';
 import 'package:orange_et_moi/pages/utils/pipes.dart';
 import 'package:orange_et_moi/services/authentication/authentication.service.dart';
 import 'package:orange_et_moi/services/navigation/app_navigation.dart';
+import 'package:orange_et_moi/services/otp/otp.service.dart';
 import 'package:orange_et_moi/services/secure_storage/secure_storage.service.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -18,10 +21,11 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _controller = TextEditingController();
-  String? _text;
+  String? _numberFromNetwork;
   String? _errorText;
   bool _loading = false;
   AuthenticationService authenticationService = AuthenticationService();
+  OTPService _otpService = OTPService();
   SecureStorage storage = SecureStorage();
   AppNavigation navigation = AppNavigation();
   @override
@@ -96,12 +100,13 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         // Note: Same code is applied for the TextFormField as well
                         TextField(
+                          scrollPadding: EdgeInsets.only(
+                              bottom: MediaQuery.of(context).viewInsets.bottom),
                           controller: _controller,
                           style: TextStyle(
                               fontSize: 26,
                               fontFamily: 'HelveticaNeueLTStd-Bd'),
                           keyboardType: TextInputType.number,
-                          onChanged: (text) => setState(() => _text),
                           decoration: InputDecoration(
                             errorText: _errorText,
                             border: OutlineInputBorder(
@@ -113,10 +118,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                       0, 0, 0, 0.12)), //<-- SEE HERE
                             ),
                             labelText: 'Numéro de téléphone *',
+                            labelStyle: TextStyle(fontSize: 20),
                             suffix: GestureDetector(
-                              onTap: () {
-                                getMsisdn();
-                              },
+                              onTap: getMsisdn,
                               child: Text(
                                 "Rafraîchir",
                                 style: TextStyle(
@@ -195,10 +199,16 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _submit() {
+    // openBottomSheet();
     _checkErrorInvalidNumber();
     if (_errorText == null) {
       // proceed
-      checkNumber();
+      if (_numberFromNetwork == _controller.text) {
+        checkNumber();
+      } else {
+        // sendOTP and proceed
+        sendOTP();
+      }
     }
   }
 
@@ -208,6 +218,7 @@ class _LoginScreenState extends State<LoginScreen> {
     print("response ${resp?.msisdn}");
     if (resp != null) {
       _controller.text = formatGetMsisdn(resp.msisdn);
+      _numberFromNetwork = formatGetMsisdn(resp.msisdn);
       saveInfosNetwork(resp);
     }
   }
@@ -252,5 +263,64 @@ class _LoginScreenState extends State<LoginScreen> {
     await storage.save(StorageKeys.HMAC.name, info.hmac);
     await storage.save(
         StorageKeys.MSISDN_NETWORK.name, formatGetMsisdn(info.msisdn));
+  }
+
+  Future getCaptchaToken() async {
+    final captchaToken = await Navigator.push(
+      context,
+      // Create the SelectionScreen in the next step.
+      MaterialPageRoute(
+          fullscreenDialog: true,
+          builder: (context) => const RecaptchaWebview()),
+    );
+    print("captchaToken $captchaToken");
+    return captchaToken;
+  }
+
+  Future generateOTP(String captchaToken) async {
+    try {
+      OtpOemGenerate otpResponse =
+          await _otpService.generateOTPForLogin(_controller.text, captchaToken);
+      if (otpResponse.otpMessageSent) {
+        // Open Modal
+      }
+    } catch (e) {
+      setState(() {
+        _errorText = "Veuillez réessayer, le code OTP n'a pas été envoyé";
+      });
+    }
+  }
+
+  void sendOTP() async {
+    setState(() {
+      _loading = true;
+    });
+    String captchaToken = await getCaptchaToken();
+    await generateOTP(captchaToken);
+    openBottomSheet();
+    setState(() {
+      _loading = false;
+    });
+  }
+
+  void openBottomSheet() async {
+    final responseModal = showModalBottomSheet(
+        isScrollControlled: true,
+        context: context,
+        shape: const RoundedRectangleBorder(
+          // <-- SEE HERE
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(25.0),
+          ),
+        ),
+        builder: (context) {
+          return TypeCodeOTP(_controller.text);
+        });
+    final responseOK = await responseModal;
+
+    if (responseOK != null) {
+      _numberFromNetwork = _controller.text;
+      _submit();
+    }
   }
 }

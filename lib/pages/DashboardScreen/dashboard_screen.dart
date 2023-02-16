@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:orange_et_moi/pages/DashboardScreen/Header/header.dart';
 import 'package:orange_et_moi/pages/DashboardScreen/TabScreen/conso_board.dart';
 import 'package:orange_et_moi/pages/DashboardScreen/TabScreen/orange_money_board.dart';
 import 'package:orange_et_moi/pages/DashboardScreen/TabScreen/services_board.dart';
@@ -28,11 +29,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: Container(
-          padding: EdgeInsets.only(top: MediaQuery.of(context).viewPadding.top),
+        body: SizedBox(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [_buildHeader(), _pages.elementAt(_currentIndex)],
+            children: [
+              Header(),
+              Flexible(
+                  child: Stack(
+                alignment: Alignment.bottomRight,
+                children: [
+                  ListView(
+                    padding: EdgeInsets.only(top: 15),
+                    // shrinkWrap: true,
+                    children: [_pages.elementAt(_currentIndex)],
+                  )
+                ],
+              ))
+            ],
           ),
         ),
         bottomNavigationBar: BottomNavigationBar(
@@ -70,57 +83,5 @@ class _DashboardScreenState extends State<DashboardScreen> {
     setState(() {
       _currentIndex = value;
     });
-  }
-}
-
-class _buildHeader extends StatelessWidget {
-  const _buildHeader({
-    Key? key,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 15, vertical: 20),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              Image(
-                width: 40,
-                fit: BoxFit.cover,
-                image: AssetImage("assets/images/icons-profil-profil.png"),
-              ),
-              GestureDetector(
-                child: Row(
-                  children: [
-                    SizedBox(width: 5),
-                    Text(
-                      "78 121 09 42",
-                      style: TextStyle(
-                          fontFamily: "HelveticaNeueLTStd-Bd", fontSize: 14),
-                    ),
-                    Icon(Icons.arrow_drop_down)
-                  ],
-                ),
-              )
-            ],
-          ),
-          Row(
-            children: [
-              IconButton(
-                  onPressed: (() {}),
-                  icon: Icon(size: 30, Icons.notifications_none_outlined)),
-              IconButton(
-                  onPressed: () {},
-                  icon: Icon(size: 30, Icons.settings_outlined)),
-              IconButton(
-                  onPressed: () {}, icon: Icon(size: 30, Icons.qr_code_scanner))
-            ],
-          )
-        ],
-      ),
-    );
   }
 }
