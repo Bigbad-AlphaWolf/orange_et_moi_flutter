@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
-import 'package:orange_et_moi/pages/utils/index.dart';
+import 'package:orange_et_moi/model/token_response.dart';
+import 'package:orange_et_moi/utils/index.dart';
 import 'package:orange_et_moi/services/secure_storage/secure_storage.service.dart';
 
 class AuthInterceptor extends Interceptor {
@@ -23,14 +24,16 @@ class AuthInterceptor extends Interceptor {
     }
 
     // Load your token here and pass to the header
-    var token = '';
+    final token = (await getAccessToken())?.accessToken;
     final uuid = await getUUID();
     options.headers.addAll({
-      // 'Authorization': token,
       'uuid': uuid.toString(),
       'X-Selfcare-Uuid': uuid.toString(),
       "content-type": "application/json"
     });
+    if (token != null) {
+      options.headers['Authorization'] = "Bearer $token";
+    }
     return handler.next(options);
   }
 
@@ -47,5 +50,15 @@ class AuthInterceptor extends Interceptor {
 
   Future<String?> getUUID() async {
     return await SecureStorage().getValue(StorageKeys.UUID.name);
+  }
+
+  Future<TokenResponse?> getAccessToken() async {
+    String? value =
+        await SecureStorage().getValue(StorageKeys.TOKEN_INFOS.name);
+    if (value != null) {
+      return tokenResponseFromJson(value);
+    } else {
+      return null;
+    }
   }
 }

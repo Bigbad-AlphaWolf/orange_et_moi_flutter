@@ -1,31 +1,21 @@
 import 'dart:convert';
 import 'dart:developer';
-import 'dart:io';
 
-import 'package:dio/adapter.dart';
 import 'package:dio/dio.dart';
 import 'package:orange_et_moi/model/check_number.dart';
 import 'package:orange_et_moi/model/confirm_msisdn.dart';
 import 'package:orange_et_moi/model/customer_offer.dart';
 import 'package:orange_et_moi/model/token_response.dart';
-import 'package:orange_et_moi/pages/utils/index.dart';
-import 'package:orange_et_moi/pages/utils/mehod_utils.dart';
-import 'package:orange_et_moi/services/interceptor/auth_interceptor.dart';
+import 'package:orange_et_moi/services/oem_http_client.dart';
+import 'package:orange_et_moi/utils/index.dart';
+import 'package:orange_et_moi/utils/mehod_utils.dart';
+import 'package:orange_et_moi/utils/pipes.dart';
 import 'package:orange_et_moi/services/micro_services.dart';
 import 'package:orange_et_moi/services/secure_storage/secure_storage.service.dart';
 
 class AuthenticationService {
   final SecureStorage storage = SecureStorage();
-  AuthenticationService() {
-    client.interceptors.add(AuthInterceptor());
-    (client.httpClientAdapter as DefaultHttpClientAdapter).onHttpClientCreate =
-        (HttpClient dioClient) {
-      dioClient.badCertificateCallback =
-          ((X509Certificate cert, String host, int port) => true);
-      return dioClient;
-    };
-  }
-  static final client = Dio();
+  static final client = OemHttpClient();
   final urlGetMsisdn = Uri.parse(ApiConstants.OM_GET_MSISDN);
   final urlConfirmGetMsisdn = Uri.parse(ApiConstants.OM_CONFIRM_GET_MSISDN);
   final urlGetServiceToken =
@@ -39,7 +29,8 @@ class AuthenticationService {
 
   Future<Response<dynamic>> getMsisdn() async {
     try {
-      Response<dynamic> response = await client.get(urlGetMsisdn.toString());
+      Response<dynamic> response =
+          await client.request.get(urlGetMsisdn.toString());
       return response;
     } catch (e) {
       log(e.toString());
@@ -50,7 +41,7 @@ class AuthenticationService {
   Future<Response<dynamic>> confirmGetMsisdn(String msisdn) async {
     try {
       Response<dynamic> response =
-          await client.get("${urlConfirmGetMsisdn.toString()}/$msisdn");
+          await client.request.get("${urlConfirmGetMsisdn.toString()}/$msisdn");
       return response;
     } catch (e) {
       log(e.toString());
@@ -65,6 +56,7 @@ class AuthenticationService {
       final confirmMsisdn = await confirmGetMsisdn(msisdn);
       ConfirmMsisdnNetwork _model =
           confirmMsisdnNetworkFromJson(confirmMsisdn.data);
+      saveInfosNetwork(_model);
       return _model;
     } catch (e) {
       log(e.toString());
@@ -72,10 +64,16 @@ class AuthenticationService {
     }
   }
 
+  Future saveInfosNetwork(ConfirmMsisdnNetwork info) async {
+    await storage.save(StorageKeys.HMAC.name, info.hmac);
+    await storage.save(
+        StorageKeys.MSISDN_NETWORK.name, formatGetMsisdn(info.msisdn));
+  }
+
   Future<TokenResponse> getServiceToken() async {
     try {
       Response<dynamic> response =
-          await client.get(urlGetServiceToken.toString());
+          await client.request.get(urlGetServiceToken.toString());
       TokenResponse model = tokenResponseFromJson(response.data);
       return model;
     } catch (e) {
@@ -85,8 +83,8 @@ class AuthenticationService {
 
   Future<CustomerOffer> getCustomerOfferForOther(String msisdn) async {
     try {
-      Response<dynamic> response =
-          await client.get("${urlGetCustomerOfferForOther.toString()}/$msisdn");
+      Response<dynamic> response = await client.request
+          .get("${urlGetCustomerOfferForOther.toString()}/$msisdn");
       return customerOfferFromJson(response.data);
     } catch (e) {
       throw Exception(e);
@@ -96,7 +94,8 @@ class AuthenticationService {
   Future<CheckNumber> checkNumber(String msisdn) async {
     final hmacNetwork = (await storage.getValue(StorageKeys.HMAC.name));
     try {
-      Response<dynamic> response = await client.post(urlCheckNumber.toString(),
+      Response<dynamic> response = await client.request.post(
+          urlCheckNumber.toString(),
           data: {"msisdn": "221$msisdn", "hmac": hmacNetwork});
       return checkNumberFromDecodedJson(response.data);
     } catch (e) {
@@ -107,14 +106,16 @@ class AuthenticationService {
   Future<TokenResponse> resetPasswordLite(String login) async {
     final hmacNetwork = (await storage.getValue(StorageKeys.HMAC.name));
     try {
-      Response<dynamic> response = await client.put(urlResetPwdLite.toString(),
-          data: {
-            "login": login,
-            "hmac": hmacNetwork,
-            "newPassword": generateRandomString(10)
-          });
+      Response<dynamic> response = await client.request
+          .put(urlResetPwdLite.toString(), data: {
+        "login": login,
+        "hmac": hmacNetwork,
+        "newPassword": generateRandomString(10)
+      });
       TokenResponse model = tokenResponseFromDecodedJson(response.data);
-      (await storage.save(StorageKeys.TOKEN_INFOS.name, model.accessToken));
+      print(json.encode(response.data.toString()));
+      (await storage.save(
+          StorageKeys.TOKEN_INFOS.name, tokenResponseToJson(model)));
       return model;
     } catch (e) {
       throw Exception(e);

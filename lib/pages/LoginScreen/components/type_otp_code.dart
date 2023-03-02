@@ -43,9 +43,7 @@ class _TypeCodeOTPState extends State<TypeCodeOTP> {
               child: IconButton(
                 padding: EdgeInsets.only(left: 0),
                 icon: Icon(Icons.arrow_back),
-                onPressed: () => {
-                  // Navigator.pop(context)
-                },
+                onPressed: () => {Navigator.pop(context)},
               ),
             ),
             SizedBox(
@@ -69,6 +67,7 @@ class _TypeCodeOTPState extends State<TypeCodeOTP> {
             ),
             Pinput(
               errorText: _errorText,
+              forceErrorState: _errorText == null ? false : true,
               controller: pinController,
               closeKeyboardWhenCompleted: true,
               length: 4,
@@ -90,13 +89,17 @@ class _TypeCodeOTPState extends State<TypeCodeOTP> {
                 border: Border.all(color: Color(0xFFff7900)),
                 borderRadius: BorderRadius.circular(8),
               ),
+              errorPinTheme: defaultPinTheme.copyDecorationWith(
+                border: Border.all(color: Color.fromARGB(255, 255, 0, 0)),
+                borderRadius: BorderRadius.circular(8),
+              ),
               submittedPinTheme: defaultPinTheme.copyWith(
                   decoration: defaultPinTheme.decoration!.copyWith(
                 color: Color.fromRGBO(234, 239, 243, 1),
               )),
               pinputAutovalidateMode: PinputAutovalidateMode.onSubmit,
               showCursor: true,
-              onCompleted: (pin) => print(pin),
+              onCompleted: (pin) => validateOTP(pin),
             ),
             SizedBox(
               height: 20,
@@ -135,21 +138,30 @@ class _TypeCodeOTPState extends State<TypeCodeOTP> {
   }
 
   Future validateOTP(String code) async {
+    print("call");
     try {
+      setState(() {
+        _isLoading = true;
+      });
       final validateOTPResponse =
           await (otpService.validateOTPForLogin(widget.msisdn, code));
-      if (validateOTPResponse.valid) {
+      if (validateOTPResponse.valid == true) {
         if (mounted) {
           Navigator.pop(context, true);
         }
       } else {
+        print("fallle");
         setState(() {
           _errorText = "Le code saisi est erroné ou a expiré.";
         });
       }
     } catch (e) {
       setState(() {
-        _errorText = "Veuillez vérifier votre connexeion puis réssayer.";
+        _errorText = "Veuillez vérifier votre connexion puis réssayer.";
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
       });
     }
   }

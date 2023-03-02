@@ -4,6 +4,9 @@ class MicroService {
   static const OrangeMoney = "selfcare-b2c-om";
   static const Services = "selfcare-b2c-services";
   static const Purchases = "selfcare-b2c-purchases";
+  static const Consos = "selfcare-b2c-conso";
+  static const FileManager = "selfcare-b2c-file-manager";
+  static const Sargal = "selfcare-b2c-sargal";
 }
 
 class ApiConstants {

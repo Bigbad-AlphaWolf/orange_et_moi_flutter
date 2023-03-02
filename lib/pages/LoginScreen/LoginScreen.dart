@@ -5,8 +5,8 @@ import 'package:orange_et_moi/model/confirm_msisdn.dart';
 import 'package:orange_et_moi/model/otp_generate.dart';
 import 'package:orange_et_moi/pages/LoginScreen/components/type_otp_code.dart';
 import 'package:orange_et_moi/pages/RecaptchaWebview/recaptcha_webview.dart';
-import 'package:orange_et_moi/pages/utils/index.dart';
-import 'package:orange_et_moi/pages/utils/pipes.dart';
+import 'package:orange_et_moi/utils/index.dart';
+import 'package:orange_et_moi/utils/pipes.dart';
 import 'package:orange_et_moi/services/authentication/authentication.service.dart';
 import 'package:orange_et_moi/services/navigation/app_navigation.dart';
 import 'package:orange_et_moi/services/otp/otp.service.dart';
@@ -46,121 +46,126 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     // FlutterStatusbarcolor.setStatusBarColor(Colors.white);
-    return Scaffold(
-      // appBar: AppBar(
-      //   systemOverlayStyle: SystemUiOverlayStyle(
-      //     // Status bar brightness (optional)
-      //     statusBarIconBrightness: Brightness.dark, // For Android (dark icons)
-      //     statusBarBrightness: Brightness.light, // For iOS (dark icons)
-      //   ),
-      // ),
-      body: SafeArea(
-        child: ListView(
-          children: [
-            Container(
-                width: MediaQuery.of(context).size.width,
-                padding: EdgeInsets.all(15.0),
-                child: Flex(
-                  direction: Axis.vertical,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        SizedBox(
-                          child: IconButton(
-                            icon: Icon(Icons.arrow_back),
-                            onPressed: () => {Navigator.of(context).pop()},
-                          ),
-                        ),
-                        SizedBox(
-                          child: SvgPicture.asset("assets/images/sim-icon.svg"),
-                        ),
-                        SizedBox(
-                          height: 25,
-                        ),
-                        Text(
-                          "Numéro de téléphone",
-                          style: TextStyle(
-                              fontSize: 34,
-                              fontFamily: 'HelveticaNeueLTStd-Bd'),
-                        ),
-                        SizedBox(
-                          height: 20,
-                        ),
-                        Text(
-                          "Veuillez saisir votre numéro de téléphone ",
-                          style: TextStyle(
-                              color: Color.fromARGB(255, 102, 102, 102),
-                              fontSize: 16,
-                              fontFamily: 'HelveticaNeueLTStd-Roman'),
-                        ),
-                        SizedBox(
-                          height: 20,
-                        ),
-                        // Note: Same code is applied for the TextFormField as well
-                        TextField(
-                          scrollPadding: EdgeInsets.only(
-                              bottom: MediaQuery.of(context).viewInsets.bottom),
-                          controller: _controller,
-                          style: TextStyle(
-                              fontSize: 26,
-                              fontFamily: 'HelveticaNeueLTStd-Bd'),
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            errorText: _errorText,
-                            border: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(5.0)),
-                              borderSide: BorderSide(
-                                  width: 1,
-                                  color: Color.fromRGBO(
-                                      0, 0, 0, 0.12)), //<-- SEE HERE
+    return WillPopScope(
+      onWillPop: () async => false,
+      child: Scaffold(
+        // appBar: AppBar(
+        //   systemOverlayStyle: SystemUiOverlayStyle(
+        //     // Status bar brightness (optional)
+        //     statusBarIconBrightness: Brightness.dark, // For Android (dark icons)
+        //     statusBarBrightness: Brightness.light, // For iOS (dark icons)
+        //   ),
+        // ),
+        body: SafeArea(
+          child: ListView(
+            children: [
+              Container(
+                  width: MediaQuery.of(context).size.width,
+                  padding: EdgeInsets.all(15.0),
+                  child: Flex(
+                    direction: Axis.vertical,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          SizedBox(
+                            child: IconButton(
+                              icon: Icon(Icons.arrow_back),
+                              onPressed: () => {Navigator.of(context).pop()},
                             ),
-                            labelText: 'Numéro de téléphone *',
-                            labelStyle: TextStyle(fontSize: 20),
-                            suffix: GestureDetector(
-                              onTap: getMsisdn,
-                              child: Text(
-                                "Rafraîchir",
-                                style: TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 14,
-                                    fontFamily: 'HelveticaNeueLTStd-Bd'),
+                          ),
+                          SizedBox(
+                            child:
+                                SvgPicture.asset("assets/images/sim-icon.svg"),
+                          ),
+                          SizedBox(
+                            height: 25,
+                          ),
+                          Text(
+                            "Numéro de téléphone",
+                            style: TextStyle(
+                                fontSize: 34,
+                                fontFamily: 'HelveticaNeueLTStd-Bd'),
+                          ),
+                          SizedBox(
+                            height: 20,
+                          ),
+                          Text(
+                            "Veuillez saisir votre numéro de téléphone ",
+                            style: TextStyle(
+                                color: Color.fromARGB(255, 102, 102, 102),
+                                fontSize: 16,
+                                fontFamily: 'HelveticaNeueLTStd-Roman'),
+                          ),
+                          SizedBox(
+                            height: 20,
+                          ),
+                          // Note: Same code is applied for the TextFormField as well
+                          TextField(
+                            scrollPadding: EdgeInsets.only(
+                                bottom:
+                                    MediaQuery.of(context).viewInsets.bottom),
+                            controller: _controller,
+                            style: TextStyle(
+                                fontSize: 26,
+                                fontFamily: 'HelveticaNeueLTStd-Bd'),
+                            keyboardType: TextInputType.number,
+                            decoration: InputDecoration(
+                              errorText: _errorText,
+                              border: OutlineInputBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(5.0)),
+                                borderSide: BorderSide(
+                                    width: 1,
+                                    color: Color.fromRGBO(
+                                        0, 0, 0, 0.12)), //<-- SEE HERE
+                              ),
+                              labelText: 'Numéro de téléphone *',
+                              labelStyle: TextStyle(fontSize: 20),
+                              suffix: GestureDetector(
+                                onTap: getMsisdn,
+                                child: Text(
+                                  "Rafraîchir",
+                                  style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 14,
+                                      fontFamily: 'HelveticaNeueLTStd-Bd'),
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        SizedBox(
-                          height: 40,
-                        ),
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width,
-                          child: OutlinedButton(
-                            style: OutlinedButton.styleFrom(
-                              padding: EdgeInsets.symmetric(vertical: 15.0),
-                              foregroundColor: Colors.white,
-                              backgroundColor: Color(0xFFff7900),
-                              disabledBackgroundColor: Color(0xFFcccccc),
-                            ),
-                            onPressed: _loading ? null : _submit,
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Text(
-                                  'Suivant',
-                                  style: TextStyle(fontSize: 16),
-                                ),
-                                _showLoading()
-                              ],
-                            ),
+                          SizedBox(
+                            height: 40,
                           ),
-                        )
-                      ],
-                    )
-                  ],
-                ))
-          ],
+                          SizedBox(
+                            width: MediaQuery.of(context).size.width,
+                            child: OutlinedButton(
+                              style: OutlinedButton.styleFrom(
+                                padding: EdgeInsets.symmetric(vertical: 15.0),
+                                foregroundColor: Colors.white,
+                                backgroundColor: Color(0xFFff7900),
+                                disabledBackgroundColor: Color(0xFFcccccc),
+                              ),
+                              onPressed: _loading ? null : _submit,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Text(
+                                    'Suivant',
+                                    style: TextStyle(fontSize: 16),
+                                  ),
+                                  _showLoading()
+                                ],
+                              ),
+                            ),
+                          )
+                        ],
+                      )
+                    ],
+                  ))
+            ],
+          ),
         ),
       ),
     );
@@ -219,7 +224,6 @@ class _LoginScreenState extends State<LoginScreen> {
     if (resp != null) {
       _controller.text = formatGetMsisdn(resp.msisdn);
       _numberFromNetwork = formatGetMsisdn(resp.msisdn);
-      saveInfosNetwork(resp);
     }
   }
 
@@ -257,12 +261,6 @@ class _LoginScreenState extends State<LoginScreen> {
         _loading = false;
       });
     }
-  }
-
-  Future saveInfosNetwork(ConfirmMsisdnNetwork info) async {
-    await storage.save(StorageKeys.HMAC.name, info.hmac);
-    await storage.save(
-        StorageKeys.MSISDN_NETWORK.name, formatGetMsisdn(info.msisdn));
   }
 
   Future getCaptchaToken() async {

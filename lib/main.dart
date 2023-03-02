@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:orange_et_moi/pages/DashboardScreen/dashboard_screen.dart';
 import 'package:orange_et_moi/pages/HomeScreen/HomeScreen.dart';
+import 'package:orange_et_moi/pages/LoginScreen/LoginScreen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -16,7 +18,7 @@ class MyApp extends StatelessWidget {
         FocusManager.instance.primaryFocus?.unfocus();
       },
       child: MaterialApp(
-        title: 'Flutter Demo',
+        title: 'Orange Et Moi',
         theme: ThemeData(
             // This is the theme of your application.
             //
@@ -36,7 +38,16 @@ class MyApp extends StatelessWidget {
                     color: Color.fromARGB(255, 255, 121, 0)), //<-- SEE HERE
               ),
             )),
-        home: const HomeScreen(),
+        initialRoute: '/',
+
+        routes: {
+          // When navigating to the "/" route, build the HomeScreen widget.
+          '/': (context) => HomeScreen(),
+          // When navigating to the "/second" route, build the SecondScreen widget.
+          '/login': (context) => LoginScreen(),
+          '/dashhboard': (context) => DashboardScreen(),
+        },
+        // home: const HomeScreen(),
       ),
     );
   }

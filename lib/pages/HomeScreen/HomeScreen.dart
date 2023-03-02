@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:orange_et_moi/model/slide.dart';
 import 'package:orange_et_moi/pages/LoginScreen/LoginScreen.dart';
-import 'package:orange_et_moi/pages/utils/index.dart';
+import 'package:orange_et_moi/utils/index.dart';
 import 'package:orange_et_moi/services/secure_storage/secure_storage.service.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:uuid/uuid.dart';
@@ -172,6 +172,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future generateUUID() async {
+    deleteStorage();
     final String? storedUUID =
         await SecureStorage().getValue(StorageKeys.UUID.name);
     print("uuid  $storedUUID");
@@ -179,5 +180,9 @@ class _HomeScreenState extends State<HomeScreen> {
       var uuid = Uuid();
       await SecureStorage().save(StorageKeys.UUID.name, uuid.v1());
     }
+  }
+
+  Future deleteStorage() async {
+    await SecureStorage().deleteAll();
   }
 }

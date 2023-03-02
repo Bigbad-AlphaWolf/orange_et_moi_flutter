@@ -1,12 +1,20 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
+import 'package:orange_et_moi/model/account_oem_infos.dart';
+import 'package:orange_et_moi/services/file_manager/file_manager.service.dart';
+import 'package:orange_et_moi/services/telco_infos/telco_infos.dart';
+import 'package:skeletons/skeletons.dart';
 
-class Header extends StatelessWidget {
+class Header extends StatefulWidget {
   const Header({
     Key? key,
   }) : super(key: key);
 
+  @override
+  State<Header> createState() => _HeaderState();
+}
+
+class _HeaderState extends State<Header> {
+  TelcoInfosService telcoInfosService = TelcoInfosService();
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -23,11 +31,42 @@ class Header extends StatelessWidget {
         children: [
           Row(
             children: [
-              Image(
-                width: 40,
-                fit: BoxFit.cover,
-                image: AssetImage("assets/images/icons-profil-profil.png"),
-              ),
+              GestureDetector(
+                  onTap: () => Scaffold.of(context).openDrawer(),
+                  child: FutureBuilder(
+                      future: getAccountInfos(),
+                      builder: ((context, snapshot) {
+                        if (snapshot.connectionState ==
+                                ConnectionState.active ||
+                            snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                          return SkeletonAvatar(
+                            style: SkeletonAvatarStyle(width: 40),
+                          );
+                        } else if (snapshot.connectionState ==
+                            ConnectionState.done) {
+                          if (snapshot.hasData) {
+                            AccountOeMInfos infos = snapshot.data!;
+                            FileManagerService fileManagerService =
+                                FileManagerService();
+                            String imgUrl = fileManagerService
+                                .getImageUrl(infos.imageProfil);
+                            return ClipOval(
+                              child: Image.network(imgUrl,
+                                  errorBuilder: (context, error, stackTrace) {
+                                return Image(
+                                  width: 40,
+                                  height: 40,
+                                  fit: BoxFit.cover,
+                                  image: AssetImage(
+                                      "assets/images/icons-profil-profil.png"),
+                                );
+                              }, fit: BoxFit.cover, height: 40, width: 40),
+                            );
+                          }
+                        }
+                        return Text("Une erreur est survenue");
+                      }))),
               GestureDetector(
                 child: Row(
                   children: [
@@ -58,5 +97,9 @@ class Header extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Future<AccountOeMInfos> getAccountInfos() async {
+    return await telcoInfosService.getAccountInfos(false);
   }
 }

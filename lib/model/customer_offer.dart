@@ -1,5 +1,8 @@
 import 'dart:convert';
 
+CustomerOffer customerOfferFromDecodedJson(Map<String, dynamic> str) =>
+    CustomerOffer.fromJson(str);
+
 CustomerOffer customerOfferFromJson(String str) =>
     CustomerOffer.fromJson(json.decode(str));
 
